@@ -264,3 +264,51 @@ paths:
             text/plain:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /dishes:
+    get:
+      tags:
+        - Dishes
+      summary: Get all dishes
+      description: Returns all dishes with their flattened list of ingredients.
+      operationId: getDishes
+      responses:
+        '200':
+          description: List of all dishes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DishRest'
+              example:
+                - id: 1
+                  name: "Ratatouille"
+                  price: 12.99
+                  dishIngredients:
+                    - id: 1
+                      name: "Tomato"
+                      category: VEGETABLE
+                      price: 2.50
+                    - id: 3
+                      name: "Zucchini"
+                      category: VEGETABLE
+                      price: 1.80
+        '400':
+          description: Bad request.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Resource not found.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+ 
