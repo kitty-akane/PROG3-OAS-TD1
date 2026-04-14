@@ -15,7 +15,7 @@ tags:
   - name: Dishes
     description: Operations about dishes
 components:
-    parameters:
+  parameters:
     IngredientId:
       name: id
       in: path
@@ -26,24 +26,23 @@ components:
         format: int32
         minimum: 1
       example: 1
-        schemas:
+  schemas:
     Category:
       type: string
       description: Category of the ingredient.
       enum: [VEGETABLE, ANIMAL, MARINE, DAIRY, OTHER]
       example: VEGETABLE
-          Unit:
+    Unit:
       type: string
       description: Unit of measurement for stock quantities.
       enum: [PCS, KG, L]
       example: KG
- 
     DishType:
       type: string
       description: Type/course of the dish.
       enum: [STARTER, MAIN, DESSERT]
       example: MAIN
-        Ingredient:
+    Ingredient:
       type: object
       required:
         - id
@@ -67,7 +66,7 @@ components:
           format: double
           description: Unit price of the ingredient.
           example: 2.50
-              StockValue:
+    StockValue:
       type: object
       required:
         - quantity
@@ -133,18 +132,17 @@ components:
           description: List of ingredients used in this dish.
           items:
             $ref: '#/components/schemas/DishIngredientRest'
- 
     ErrorResponse:
       type: string
       description: Plain text error message returned on 4xx/5xx responses.
       example: "Ingredient.id=1 is not found"
 paths:
   /ingredients:
-    Get:
+    get:
       tags:
         - Ingredients
       summary: Get all ingredients
-            description: Returns the full list of ingredients without their stock movements.
+      description: Returns the full list of ingredients without their stock movements.
       operationId: getIngredients
       responses:
         '200':
@@ -170,6 +168,96 @@ paths:
             text/plain:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /ingredients/{id}:
+      get:
+        tags:
+          - Ingredients
+        summary: Get an ingredient by ID
+        description: Returns a single ingredient identified by its ID. Returns 404 if not found.
+        operationId: getIngredientById
+        parameters:
+          - $ref: '#/components/parameters/IngredientId'
+        responses:
+          '200':
+            description: Ingredient found.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Ingredient'
+                example:
+                  id: 1
+                  name: "Tomato"
+                  category: VEGETABLE
+                  price: 2.50
+          '404':
+            description: Ingredient not found.
+            content:
+              text/plain:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                example: "Ingredient.id=1 is not found"
+          '500':
+            description: Internal server error.
+            content:
+              text/plain:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+  /ingredients/{id}/stock:
+    get:
+      tags:
+        - Ingredients
+      summary: Get stock value of an ingredient at a given datetime
+      description: >
+        Returns the computed stock quantity for the ingredient at the specified
+        datetime. Both `at` and `unit` are mandatory — Spring returns 400
+        automatically if either is missing.
+      operationId: getIngredientStock
+      parameters:
+        - $ref: '#/components/parameters/IngredientId'
+        - name: at
+          in: query
+          required: true
+          description: The datetime at which to evaluate the stock (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+          example: "2025-08-21T10:00:00Z"
+        - name: unit
+          in: query
+          required: true
+          description: The unit in which to express the stock value.
+          schema:
+            $ref: '#/components/schemas/Unit'
+      responses:
+        '200':
+          description: Stock value at the requested datetime.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockValue'
+              example:
+                quantity: 12.5
+                unit: KG
+        '400':
+          description: Missing or invalid query parameter (`at` or `unit` not provided).
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: "Either mandatory query parameter `at` or `unit` is not provided."
+        '404':
+          description: Ingredient not found.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: "Ingredient.id=1 is not found"
         '500':
           description: Internal server error.
           content:
