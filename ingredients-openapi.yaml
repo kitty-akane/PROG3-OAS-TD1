@@ -1,0 +1,16 @@
+openapi: 3.0.3
+ 
+info:
+  title: Restaurant Ingredients API
+  description: REST API for managing ingredients and dishes
+  version: 1.0.0
+ 
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+ 
+tags:
+  - name: Ingredients
+    description: Operations about ingredients
+  - name: Dishes
+    description: Operations about dishes
